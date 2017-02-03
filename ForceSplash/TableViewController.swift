@@ -29,7 +29,7 @@ class TableViewController: UITableViewController, MenuDelegate, MenuDataSource{
     override func viewDidLoad() {
         super.viewDidLoad()
         container = VPSplashView.addSplashTo(self.view, menuDelegate: self)
-        container?.menu?.secondColor = UIColor.yellowColor()
+        container?.menu?.secondColor = UIColor.yellow
         container?.menu?.menuIcon = UIImage(named: "rocket")
         container!.setDataSource(self)
     }
@@ -44,10 +44,10 @@ class TableViewController: UITableViewController, MenuDelegate, MenuDataSource{
     
     // MARK: Menu Delegate
     
-    func pickedItemAtIndex(indexPath : NSIndexPath){
+    func pickedItemAtIndex(_ indexPath : IndexPath){
         print("Navigate to \((menuItems[indexPath.row][VPSplashNameKey])!)")
         if (indexPath.row == menuItems.count-1){
-            self.performSegueWithIdentifier("Share", sender: nil)
+            self.performSegue(withIdentifier: "Share", sender: nil)
         } else {
             self.navigationItem.title = (menuItems[indexPath.row][VPSplashNameKey])!
         }
@@ -59,7 +59,7 @@ class TableViewController: UITableViewController, MenuDelegate, MenuDataSource{
         return self.menuItems.count
     }
     
-    func menuIconForIndexPath(indexPath: NSIndexPath) -> UIImage {
+    func menuIconForIndexPath(_ indexPath: IndexPath) -> UIImage {
         return UIImage(named:self.menuItems[indexPath.row][VPSplashIconKey]!)!
     }
 }

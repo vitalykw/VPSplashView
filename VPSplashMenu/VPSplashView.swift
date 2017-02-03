@@ -11,12 +11,23 @@ import UIKit
 
 class VPSplashView : UIView {
     
-    static func addSplashTo(view : UIView, menuDelegate: MenuDelegate) -> VPSplashView{
+    private lazy var __once: () = {
+            if self.traitCollection.forceTouchCapability == UIForceTouchCapability.unavailable
+            {
+                let longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(VPSplashView.longPressed(_:)))
+                self.addGestureRecognizer(longPressRecognizer)
+                self.use3DTouch = false
+            } else {
+                self.use3DTouch = true
+            }
+        }()
+    
+    static func addSplashTo(_ view : UIView, menuDelegate: MenuDelegate) -> VPSplashView{
         let splashView = VPSplashView(view: view)
-        splashView.backgroundColor = UIColor.clearColor()
-        splashView.exclusiveTouch = true
+        splashView.backgroundColor = UIColor.clear
+        splashView.isExclusiveTouch = true
         
-        if (view.isKindOfClass(UIScrollView.classForCoder())){
+        if (view.isKind(of: UIScrollView.classForCoder())){
             (view as! UIScrollView).canCancelContentTouches = false
         }
         
@@ -27,9 +38,9 @@ class VPSplashView : UIView {
     // MARK: Initialization
     var menu : VPSplashMenu?
     
-    private var use3DTouch : Bool = true
+    fileprivate var use3DTouch : Bool = true
     
-    var onceToken: dispatch_once_t = 0
+    var onceToken: Int = 0
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
@@ -41,88 +52,79 @@ class VPSplashView : UIView {
         self.menu = VPSplashMenu.init(center: self.center)
     }
     
-    func setDataSource(source: MenuDataSource!){
+    func setDataSource(_ source: MenuDataSource!){
         self.menu?.dataSource = source
     }
     
     override func layoutSubviews() {
          super.layoutSubviews()
-        self.superview?.bringSubviewToFront(self)
+        self.superview?.bringSubview(toFront: self)
 
         if (self.superview != nil){
             self.setup()
         }
     }
     
-    private func setup(){
-        dispatch_once(&onceToken) {
-            if self.traitCollection.forceTouchCapability == UIForceTouchCapability.Unavailable
-            {
-                let longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(VPSplashView.longPressed(_:)))
-                self.addGestureRecognizer(longPressRecognizer)
-                self.use3DTouch = false
-            } else {
-                self.use3DTouch = true
-            }
-        };
+    fileprivate func setup(){
+        _ = self.__once;
     }
     
     // MARK: Long Press Handling
-    func longPressed(sender: UILongPressGestureRecognizer)
+    func longPressed(_ sender: UILongPressGestureRecognizer)
     {
         switch sender.state {
-        case .Began:
-            let centerPoint  = sender.locationInView(self)
+        case .began:
+            let centerPoint  = sender.location(in: self)
             menu?.movedTo(centerPoint)
             menu?.showAt(self)
             menu?.squash()
             
-        case .Ended:
+        case .ended:
             menu?.cancelTap()
             menu?.removeFromSuperview()
-        case .Changed:
-            let centerPoint = sender.locationInView(self)
-            menu?.handleTap((menu?.convertPoint(centerPoint, fromView: self))!)
+        case .changed:
+            let centerPoint = sender.location(in: self)
+            menu?.handleTap((menu?.convert(centerPoint, from: self))!)
         default:
             menu?.removeFromSuperview()
         }
     }
     
     // MARK: Touch Handling
-    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         if (use3DTouch == true){
-            var centerPoint : CGPoint = CGPointZero
+            var centerPoint : CGPoint = CGPoint.zero
             for touch in touches {
-                centerPoint = touch.locationInView(self)
+                centerPoint = touch.location(in: self)
                 menu?.movedTo(centerPoint)
                 menu?.showAt(self)
             }
         }
     }
     
-    override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         if (use3DTouch == true){
             for touch in touches {
-                let centerPoint = touch.locationInView(self)
+                let centerPoint = touch.location(in: self)
                 if (menu?.shown == false){
                     menu?.movedTo(centerPoint)
                     if (touch.force > minimalForceToSquash){
                         menu?.squash()
                     }
                 } else {
-                    menu?.handleTap((menu?.convertPoint(centerPoint, fromView: self))!)
+                    menu?.handleTap((menu?.convert(centerPoint, from: self))!)
                 }
             }
         }
     }
     
-    override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         if (use3DTouch == true){
             menu?.hide()
         }
     }
     
-    override func touchesCancelled(touches: Set<UITouch>?, withEvent event: UIEvent?) {
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
         if (use3DTouch){
             menu?.hide()
         }

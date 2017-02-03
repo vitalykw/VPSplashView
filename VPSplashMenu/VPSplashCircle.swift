@@ -32,7 +32,7 @@ class VPSplashCircle : UIView {
     var expectedCenter : CGPoint
     var angleToCenter : CGFloat = 0
     
-    var color: UIColor = UIColor.redColor()
+    var color: UIColor = UIColor.red
     
     var connectionLayer : CAShapeLayer?
     var ovalLayer : CAShapeLayer?
@@ -55,9 +55,9 @@ class VPSplashCircle : UIView {
         setup()
     }
     
-    private func setup() {
+    fileprivate func setup() {
         self.frame = CGRect(x: center.x - radius, y: center.y - radius, width: 2 * radius, height: 2 * radius)
-        let bezierPath = UIBezierPath(ovalInRect: CGRect(origin: CGPointZero, size: CGSize(width: radius * 2, height: radius * 2)))
+        let bezierPath = UIBezierPath(ovalIn: CGRect(origin: CGPoint.zero, size: CGSize(width: radius * 2, height: radius * 2)))
         draw(bezierPath)
     }
     
@@ -72,42 +72,42 @@ class VPSplashCircle : UIView {
         CATransaction.begin()
         CATransaction.setCompletionBlock{
             self.center = self.expectedCenter
-            self.connectionLayer?.path = self.animatedPath(self.expectedCenter).CGPath
+            self.connectionLayer?.path = self.animatedPath(self.expectedCenter).cgPath
         }
         
         let distance = LiquidHelper.distanceBetween(expectedCenter, point2: self.center)
         
         let startCircle = CABasicAnimation(keyPath: "position")
-        startCircle.fromValue = NSValue(CGPoint : self.center)
-        startCircle.toValue = NSValue(CGPoint : LiquidHelper.circlePoint(self.center, radius: distance*1.5, rad: angleToCenter))
+        startCircle.fromValue = NSValue(cgPoint : self.center)
+        startCircle.toValue = NSValue(cgPoint : LiquidHelper.circlePoint(self.center, radius: distance*1.5, rad: angleToCenter))
         startCircle.duration = duration/3.0
         
         let bounceCircle = CABasicAnimation(keyPath: "position")
         bounceCircle.fromValue =  startCircle.toValue
-        bounceCircle.toValue = NSValue(CGPoint : LiquidHelper.circlePoint(self.center, radius: distance*0.75, rad: angleToCenter))
+        bounceCircle.toValue = NSValue(cgPoint : LiquidHelper.circlePoint(self.center, radius: distance*0.75, rad: angleToCenter))
         bounceCircle.beginTime = startCircle.beginTime+startCircle.duration
         bounceCircle.duration = duration/3.0
         
         let endCircle = CABasicAnimation(keyPath: "position")
         endCircle.fromValue =  bounceCircle.toValue
-        endCircle.toValue = NSValue(CGPoint : expectedCenter)
+        endCircle.toValue = NSValue(cgPoint : expectedCenter)
         endCircle.beginTime = bounceCircle.beginTime+bounceCircle.duration
         endCircle.duration = duration/3.0
         
         let start = CABasicAnimation(keyPath: "path")
-        start.fromValue = animatedPath(self.center).CGPath
-        start.toValue = animatedPath(LiquidHelper.circlePoint(self.center, radius: distance*1.5, rad: angleToCenter)).CGPath
+        start.fromValue = animatedPath(self.center).cgPath
+        start.toValue = animatedPath(LiquidHelper.circlePoint(self.center, radius: distance*1.5, rad: angleToCenter)).cgPath
         start.duration = duration/3.0
         
         let bounce = CABasicAnimation(keyPath: "path")
         bounce.fromValue =  start.toValue
-        bounce.toValue = animatedPath(LiquidHelper.circlePoint(self.center, radius: distance*0.75, rad: angleToCenter)).CGPath
+        bounce.toValue = animatedPath(LiquidHelper.circlePoint(self.center, radius: distance*0.75, rad: angleToCenter)).cgPath
         bounce.beginTime = start.beginTime+start.duration
         bounce.duration = duration/3.0
         
         let end = CABasicAnimation(keyPath: "path")
         end.fromValue =  bounce.toValue
-        end.toValue = animatedPath(expectedCenter).CGPath
+        end.toValue = animatedPath(expectedCenter).cgPath
         end.beginTime = bounce.beginTime+bounce.duration
         end.duration = duration/3.0
         
@@ -116,22 +116,22 @@ class VPSplashCircle : UIView {
         groupCircle.fillMode = kCAFillModeBoth // keep to value after finishing
         groupCircle.animations = [startCircle, bounceCircle, endCircle]
         groupCircle.duration = end.beginTime+end.duration
-        groupCircle.removedOnCompletion = false
+        groupCircle.isRemovedOnCompletion = false
         
         let group = CAAnimationGroup()
         group.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseOut) // animation curve is Ease Out
         group.fillMode = kCAFillModeBoth // keep to value after finishing
         group.animations = [start, bounce, end]
         group.duration = end.beginTime+end.duration
-        group.removedOnCompletion = false
+        group.isRemovedOnCompletion = false
         
-        self.layer.addAnimation(groupCircle, forKey: "animate position along path")
-        self.connectionLayer?.addAnimation(group, forKey: "animate stretching")
+        self.layer.add(groupCircle, forKey: "animate position along path")
+        self.connectionLayer?.add(group, forKey: "animate stretching")
         
         CATransaction.commit()
     }
     
-    func animatedPath(tempCenter: CGPoint) -> UIBezierPath {
+    func animatedPath(_ tempCenter: CGPoint) -> UIBezierPath {
         return LiquidHelper.pathBetween(self.center,
                                         circleRadius: mainRadius,
                                         otherCenter: tempCenter,
@@ -148,9 +148,9 @@ class VPSplashCircle : UIView {
             scaleAnimation.fromValue = 1.0
             scaleAnimation.toValue = 1.25
             scaleAnimation.fillMode = kCAFillModeBoth
-            scaleAnimation.removedOnCompletion = false
+            scaleAnimation.isRemovedOnCompletion = false
             
-            self.layer.addAnimation(scaleAnimation, forKey: "wobble")
+            self.layer.add(scaleAnimation, forKey: "wobble")
             animated = true
         }
     }
@@ -162,8 +162,8 @@ class VPSplashCircle : UIView {
             scaleAnimation.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseInEaseOut)
             scaleAnimation.fromValue = 1.25
             scaleAnimation.toValue = 1.0
-            scaleAnimation.removedOnCompletion = true
-            self.layer.addAnimation(scaleAnimation, forKey: "wobble")
+            scaleAnimation.isRemovedOnCompletion = true
+            self.layer.add(scaleAnimation, forKey: "wobble")
             
             animated = false
         }
@@ -171,13 +171,13 @@ class VPSplashCircle : UIView {
     
     //MARK: Drawing methods
     
-    func draw(path: UIBezierPath) {
+    func draw(_ path: UIBezierPath) {
         self.layer.sublayers?.removeAll();
         
         let layer = CAShapeLayer(layer: self.layer)
         layer.lineWidth = 3.0
-        layer.fillColor = self.color.CGColor
-        layer.path = path.CGPath
+        layer.fillColor = self.color.cgColor
+        layer.path = path.cgPath
         ovalLayer = layer
         self.layer.addSublayer(layer)
     }
@@ -186,7 +186,7 @@ class VPSplashCircle : UIView {
         if (self.layer.sublayers?.last?.name == "IconLayer"){
             self.layer.sublayers?.last?.removeFromSuperlayer()
         }
-        var imageBounds = CGRectZero
+        var imageBounds = CGRect.zero
         
         imageBounds.size.width = self.bounds.width*imageScaleFactor
         imageBounds.size.height = self.bounds.height*imageScaleFactor
@@ -198,16 +198,16 @@ class VPSplashCircle : UIView {
         imageLayer.frame = imageBounds
         
         if (tintColor != nil){
-            imageLayer.contents = icon?.imageWithColor(tintColor!).CGImage
+            imageLayer.contents = icon?.imageWithColor(tintColor!).cgImage
         } else {
-            imageLayer.contents = icon?.CGImage
+            imageLayer.contents = icon?.cgImage
         }
         
         imageLayer.masksToBounds = true
         self.layer.addSublayer(imageLayer)
     }
     
-    func circlePoint(rad: CGFloat) -> CGPoint {
+    func circlePoint(_ rad: CGFloat) -> CGPoint {
         return LiquidHelper.circlePoint(self.center, radius: self.radius, rad: rad)
     }
     
